@@ -196,4 +196,4 @@ except YTDownloadError as e:
 
 ## License
 
-MIT
+[MIT](LICENSE)
