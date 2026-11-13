@@ -22,7 +22,7 @@ class Job:
 @dataclass
 class VideoInfo:
     title: str
-    duration: int
+    duration: int | None
     uploader: str | None
     thumbnail: str | None
     formats: list[dict] = field(default_factory=list)
@@ -30,6 +30,8 @@ class VideoInfo:
 
     @property
     def duration_formatted(self) -> str:
+        if self.duration is None:
+            return "unknown"
         m, s = divmod(self.duration, 60)
         h, m = divmod(m, 60)
         return f"{h:02d}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"

@@ -1,16 +1,16 @@
 from .client import YTDownloadClient
-from .models import Job, VideoInfo
 from .exceptions import (
-    YTDownloadError,
     AuthenticationError,
-    RateLimitError,
     JobFailedError,
     JobNotFoundError,
     JobTimeoutError,
+    RateLimitError,
     ServerBusyError,
+    YTDownloadError,
 )
+from .models import Job, VideoInfo
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 __all__ = [
     "YTDownloadClient",
     "Job",

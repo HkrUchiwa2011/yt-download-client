@@ -7,7 +7,9 @@ class AuthenticationError(YTDownloadError):
 
 
 class RateLimitError(YTDownloadError):
-    pass
+    def __init__(self, message, *, retry_after=5):
+        super().__init__(message)
+        self.retry_after = retry_after
 
 
 class JobFailedError(YTDownloadError):
@@ -23,4 +25,6 @@ class JobTimeoutError(YTDownloadError):
 
 
 class ServerBusyError(YTDownloadError):
-    pass
+    def __init__(self, message, *, retry_after=5):
+        super().__init__(message)
+        self.retry_after = retry_after

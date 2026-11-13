@@ -1,28 +1,42 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.33,<2"]
 build-backend = "hatchling.build"
 
 [project]
 name = "yt-download-client"
-version = "1.0.1"
+version = "1.1.0"
 description = "Python client for yt-download-api — download YouTube videos via HTTP from any script or bot."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
-dependencies = ["httpx>=0.27.0"]
+dependencies = ["httpx>=0.28.1,<0.29"]
 keywords = ["youtube", "download", "api", "client", "yt-dlp"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",
     "Topic :: Internet :: WWW/HTTP",
 ]
 
 [project.urls]
-Homepage = "https://github.com/HkrUchiwa2011/yt-download-api"
-Repository = "https://github.com/HkrUchiwa2011/yt-download-api"
-Issues = "https://github.com/HkrUchiwa2011/yt-download-api/issues"
+Homepage = "https://github.com/HkrUchiwa2011/yt-download-client"
+Repository = "https://github.com/HkrUchiwa2011/yt-download-client"
+Issues = "https://github.com/HkrUchiwa2011/yt-download-client/issues"
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-httpx", "hatch"]
+dev = ["pytest>=9.2,<10", "pytest-httpx>=0.36.2,<0.37", "build>=1.6,<2", "ruff>=0.17.5,<0.18", "pip-audit>=2.10,<3"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "S"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

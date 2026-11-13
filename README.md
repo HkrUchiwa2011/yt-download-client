@@ -1,7 +1,7 @@
 # yt-download-client
 
 [![PyPI](https://img.shields.io/pypi/v/yt-download-client.svg)](https://pypi.org/project/yt-download-client/)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 
 Python client for [yt-download-api](https://github.com/HkrUchiwa2011/yt-download-api).
@@ -13,6 +13,18 @@ pip install yt-download-client
 ```
 
 ---
+
+## Connection and download behavior
+
+Prefer `with YTDownloadClient(base_url, api_key) as client:` or call `client.close()` when finished. A session reuses HTTP connections. Automatic redirects and environment proxy settings are disabled, so a redirect cannot forward the API key to a different host. Use HTTPS outside a trusted local network.
+
+GET requests retry network failures and HTTP 429/502/503/504 at most `max_retries` times. `Retry-After` is honored within a bounded delay. POST submission and DELETE are not automatically retried. `RateLimitError` and `ServerBusyError` expose `retry_after` in seconds.
+
+`wait(timeout=...)` uses a monotonic deadline covering polling and its retry delays. `timeout` on `download()` applies to the job wait; each HTTP operation uses the constructor's network timeout. It is not a deadline for the entire submit/wait/file-transfer sequence.
+
+File transfers use a private temporary file and only publish the result after completion. Server-provided filenames must be safe single filenames, including RFC 5987 Unicode names; existing default destinations and symlinks are never overwritten. An explicitly supplied `output` is replaced atomically after a successful transfer. Failed transfers preserve existing files and remove partial temporary files. `max_download_bytes` bounds file size; JSON responses are limited to 1 MiB. The client requests uncompressed responses and refuses unexpected Content-Encoding before reading, preventing decompression from bypassing those limits.
+
+`duration` can be `None` for live/unknown-duration metadata; `duration_formatted` returns `"unknown"`. Live downloads are refused by the API. `audio_only` requires `format="mp3"`.
 
 ## Requirements
 
@@ -102,6 +114,7 @@ for fmt in info.formats:
 ### Discord bot example
 
 ```python
+import asyncio
 import discord
 from yt_download_client import YTDownloadClient, JobFailedError
 
@@ -114,7 +127,7 @@ async def on_message(message):
         url = message.content.split(" ", 1)[1]
         await message.channel.send("Downloading...")
         try:
-            path = client.download(url, format="mp4", quality="720p")
+            path = await asyncio.to_thread(client.download, url, format="mp4", quality="720p")
             await message.channel.send(file=discord.File(str(path)))
         except JobFailedError as e:
             await message.channel.send(f"Failed: {e}")
@@ -155,7 +168,7 @@ except YTDownloadError as e:
 
 ## API reference
 
-### `YTDownloadClient(base_url, api_key, timeout=30)`
+### `YTDownloadClient(base_url, api_key, timeout=30, *, max_retries=2, max_download_bytes=1073741824)`
 
 | Method | Description |
 |--------|-------------|
@@ -185,7 +198,7 @@ except YTDownloadError as e:
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `title` | `str` | Video title |
-| `duration` | `int` | Duration in seconds |
+| `duration` | `int \| None` | Duration in seconds |
 | `duration_formatted` | `str` | Human-readable duration (`03:33`) |
 | `uploader` | `str` | Channel name |
 | `thumbnail` | `str` | Thumbnail URL |
@@ -197,3 +210,16 @@ except YTDownloadError as e:
 ## License
 
 [MIT](LICENSE)
+
+## Local checks
+
+```bash
+uv sync --locked --extra dev
+uv run --locked --extra dev pytest
+uv run --locked --extra dev ruff check yt_download_client tests
+uv run --locked --extra dev ruff format --check yt_download_client tests
+uv run --locked --extra dev python -m build
+uv run --locked --extra dev pip-audit
+```
+
+Tests use HTTP mocks and do not contact YouTube. See [SECURITY_REVIEW.md](SECURITY_REVIEW.md) and [CHANGELOG.md](CHANGELOG.md).

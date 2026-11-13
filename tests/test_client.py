@@ -1,8 +1,13 @@
 import pytest
-import httpx
 from pytest_httpx import HTTPXMock
+
 from yt_download_client import YTDownloadClient
-from yt_download_client.exceptions import AuthenticationError, RateLimitError, JobFailedError, JobTimeoutError
+from yt_download_client.exceptions import (
+    AuthenticationError,
+    JobFailedError,
+    JobTimeoutError,
+    RateLimitError,
+)
 
 BASE = "https://api.example.com"
 KEY = "test-key"
@@ -10,7 +15,8 @@ KEY = "test-key"
 
 @pytest.fixture
 def client():
-    return YTDownloadClient(base_url=BASE, api_key=KEY)
+    with YTDownloadClient(base_url=BASE, api_key=KEY) as client:
+        yield client
 
 
 def test_health(client, httpx_mock: HTTPXMock):
@@ -51,7 +57,12 @@ def test_wait_success(client, httpx_mock: HTTPXMock):
     )
     httpx_mock.add_response(
         url=f"{BASE}/status/abc-123",
-        json={"job_id": "abc-123", "status": "success", "download_url": "/file/abc-123", "progress": {}},
+        json={
+            "job_id": "abc-123",
+            "status": "success",
+            "download_url": "/file/abc-123",
+            "progress": {},
+        },
     )
     job = client.wait("abc-123", poll_interval=0)
     assert job.successful
@@ -67,10 +78,6 @@ def test_wait_failure(client, httpx_mock: HTTPXMock):
 
 
 def test_wait_timeout(client, httpx_mock: HTTPXMock):
-    httpx_mock.add_response(
-        url=f"{BASE}/status/abc-123",
-        json={"job_id": "abc-123", "status": "pending"},
-    )
     with pytest.raises(JobTimeoutError):
         client.wait("abc-123", poll_interval=0, timeout=0)
 

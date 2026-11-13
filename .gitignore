@@ -7,3 +7,9 @@ dist/
 build/
 .pytest_cache/
 .venv/
+.env.*
+!.env.example
+token.env
+*.pem
+*.key
+.ruff_cache/
