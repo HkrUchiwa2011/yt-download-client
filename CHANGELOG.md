@@ -2,6 +2,7 @@
 
 ## 1.1.0 — unreleased
 
+- GitHub Actions tests, dependency audits and package builds; weekly Dependabot proposals with manual merging/publication.
 - Reusable HTTP session with close/context manager support.
 - Bounded safe-GET retries and Retry-After handling; submission is never retried automatically.
 - Monotonic polling deadline, consistent exceptions and bounded JSON/file responses.

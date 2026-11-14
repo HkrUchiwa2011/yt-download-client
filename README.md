@@ -223,3 +223,9 @@ uv run --locked --extra dev pip-audit
 ```
 
 Tests use HTTP mocks and do not contact YouTube. See [SECURITY_REVIEW.md](SECURITY_REVIEW.md) and [CHANGELOG.md](CHANGELOG.md).
+
+## Maintenance
+
+GitHub Actions tests pull requests and runs weekly dependency audits. Dependabot
+proposes weekly updates; merging and publishing to PyPI remain manual. See
+[MAINTENANCE.md](MAINTENANCE.md) for the review and release process.

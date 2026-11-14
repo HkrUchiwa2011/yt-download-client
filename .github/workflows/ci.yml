@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '43 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python ${{ matrix.python }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: '0.13.8'
+          enable-cache: false
+      - run: uv sync --locked --extra dev --python '${{ matrix.python }}'
+      - run: uv run --locked --extra dev ruff check yt_download_client tests
+      - run: uv run --locked --extra dev ruff format --check yt_download_client tests
+      - run: uv run --locked --extra dev pytest -q
+      - run: uv run --locked --extra dev pip-audit
+      - name: Build distributions
+        if: matrix.python == '3.13'
+        run: uv run --locked --extra dev python -m build
